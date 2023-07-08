@@ -1,23 +1,42 @@
-import { Card } from "flowbite-react";
-import { atom, useAtom } from "jotai";
+import { Button, Card } from "flowbite-react";
+import { useAtom } from "jotai";
 import { useEffect } from "react";
-
-type FilmsProps = {
-  Title: string;
-  Year: string;
-  imdbID: string;
-  Type: string;
-  Poster: string;
-};
-
-const filmsAtom = atom<FilmsProps[] | null>(null);
-const isLoadingAtom = atom<boolean>(true);
-const savedFilmsAtom = atom<FilmsProps[] | null>(null);
+import { isLoadingAtom, moviesAtom, savedMoviesAtom } from "../store";
+import { MoviesProps } from "../types";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
-  const [films, setFilms] = useAtom(filmsAtom);
-  const [savedFilms, setSavedFilms] = useAtom(savedFilmsAtom);
+  const [movies, setMovies] = useAtom(moviesAtom);
+  const [savedMovies, setSavedMovies] = useAtom(savedMoviesAtom);
+
+  function saveMovie<T>(newData: T) {
+    localStorage.setItem("saved-movies", JSON.stringify(newData));
+  }
+
+  function handleSave(id: string) {
+    const savedMoviesData = [...savedMovies] as MoviesProps[];
+    const moviesData = [...(movies || [])] as MoviesProps[];
+    const foundData = moviesData.find((item) => item.imdbID === id);
+
+    savedMoviesData.push({
+      imdbID: foundData!.imdbID,
+      Title: foundData!.Title,
+      Poster: foundData!.Poster,
+      Type: foundData!.Type,
+      Year: foundData!.Year,
+    });
+
+    setSavedMovies(savedMoviesData);
+    saveMovie(savedMoviesData);
+  }
+
+  function handleDeleteSavedMovie(id: string) {
+    const data = [...savedMovies];
+    const filteredData = data.filter((item) => item.imdbID !== id);
+
+    setSavedMovies(filteredData);
+    saveMovie(filteredData);
+  }
 
   useEffect(() => {
     async function getData(): Promise<void> {
@@ -26,16 +45,16 @@ export default function Home() {
       );
       const data = await response.json();
 
-      setFilms(data.Search);
+      setMovies(data.Search);
     }
 
     getData();
     setIsLoading(false);
 
-    if (localStorage.getItem("films")) {
-      setSavedFilms(JSON.parse(localStorage.getItem("films") as string));
+    if (localStorage.getItem("saved-movies")) {
+      setSavedMovies(JSON.parse(localStorage.getItem("saved-movies") || ""));
     }
-  }, [setIsLoading, setFilms, setSavedFilms]);
+  }, [setIsLoading, setMovies, setSavedMovies]);
 
   return (
     <main className="w-full max-w-7xl min-h-screen flex justify-center">
@@ -43,14 +62,21 @@ export default function Home() {
         <h1>Cari Film yang kamu ingin tonton!</h1>
         <div>
           <p>Daftar film saat ini</p>
-          <div className="grid grid-cols-3 grid-rows-1">
+          <div className="grid grid-cols-3 grid-rows-1 gap-6">
             {isLoading ? (
               <p>Loading....</p>
-            ) : films !== null ? (
-              films?.map((item) => (
-                <Card key={item.Title}>
+            ) : movies !== null ? (
+              movies?.map((item) => (
+                <Card key={item.imdbID}>
+                  <img
+                    className="w-full h-96"
+                    src={item.Poster}
+                    alt={item.Title}
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <p>{item.Title}</p>
-                  <button>Save</button>
+                  <Button onClick={() => handleSave(item.imdbID)}>Save</Button>
                 </Card>
               ))
             ) : (
@@ -59,17 +85,29 @@ export default function Home() {
           </div>
           <div>
             <p>Film yang kamu simpan</p>
-            {isLoading ? (
-              <p>Loading....</p>
-            ) : savedFilms !== null ? (
-              savedFilms?.map((item) => (
-                <Card key={item.Title}>
-                  <p>{item.Title}</p>
-                </Card>
-              ))
-            ) : (
-              <p>Belum ada data!</p>
-            )}
+            <div className="grid grid-cols-3 grid-rows-1 gap-6">
+              {isLoading ? (
+                <p>Loading....</p>
+              ) : savedMovies.length ? (
+                savedMovies?.map((item) => (
+                  <Card key={item.imdbID}>
+                    <img
+                      className="w-full h-96"
+                      src={item.Poster}
+                      alt={item.Title}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <p>{item.Title}</p>
+                    <Button onClick={() => handleDeleteSavedMovie(item.imdbID)}>
+                      Delete
+                    </Button>
+                  </Card>
+                ))
+              ) : (
+                <p>Belum ada data!</p>
+              )}
+            </div>
           </div>
         </div>
       </section>

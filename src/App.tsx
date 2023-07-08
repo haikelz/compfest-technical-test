@@ -7,9 +7,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="w-full flex items-center justify-center flex-col">
-        <Navbar className="border-2 max-w-7xl w-full backdrop-blur-md bg-white/70 sticky top-0">
+        <Navbar className="border-b-[1.5px] w-full backdrop-blur-md bg-white/80 sticky top-0">
           <h1 className="font-bold text-2xl">Moviesin</h1>
-          <ul className="flex justify-center items-center space-x-4">
+          <ul className="hidden md:flex justify-center items-center space-x-4">
             <li>
               <p>Home</p>
             </li>
