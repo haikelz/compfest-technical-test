@@ -1,31 +1,77 @@
-import { Navbar } from "flowbite-react";
+import {
+  ClerkProvider,
+  RedirectToSignIn,
+  SignedIn,
+  SignedOut,
+} from "@clerk/clerk-react";
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Layout from "./components/ui/Layout";
+import Loading from "./components/ui/Loading";
+import { env } from "./env";
+
+const Home = lazy(() => import("./pages/Home"));
+const SavedMovies = lazy(() => import("./pages/SavedMovies"));
+const DetailMovie = lazy(() => import("./pages/DetailMovie"));
+
+const { VITE_CLERK_PUBLISHABLE_KEY } = env;
+
+if (!VITE_CLERK_PUBLISHABLE_KEY) throw new Error("Missing Publishable Key!");
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="w-full flex items-center justify-center flex-col">
-        <Navbar className="border-b-[1.5px] w-full backdrop-blur-md bg-white/80 sticky top-0">
-          <h1 className="font-bold text-2xl">Moviesin</h1>
-          <ul className="hidden md:flex justify-center items-center space-x-4">
-            <li>
-              <p>Home</p>
-            </li>
-            <li>
-              <p>Movies List</p>
-            </li>
-            <li>
-              <p>ddfg</p>
-            </li>
-          </ul>
-        </Navbar>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <ClerkProvider publishableKey={VITE_CLERK_PUBLISHABLE_KEY}>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <SignedIn>
+                    <Suspense fallback={<Loading />}>
+                      <Home />
+                    </Suspense>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
+            <Route
+              path="/detail-movie/:imdbID"
+              element={
+                <>
+                  <SignedIn>
+                    <Suspense fallback={<Loading />}>
+                      <DetailMovie />
+                    </Suspense>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
+            <Route
+              path="/saved-movies"
+              element={
+                <>
+                  <SignedIn>
+                    <Suspense fallback={<Loading />}>
+                      <SavedMovies />
+                    </Suspense>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </ClerkProvider>
   );
 }

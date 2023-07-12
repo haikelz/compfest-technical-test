@@ -6,7 +6,7 @@
 
 Pada tugas technical challenge ini, Anda diminta untuk membuat sebuah website atau aplikasi mobile dari suatu cinema. Tugas ini terbagi menjadi dua bagian yang dapat Anda kerjakan. Pastikan untuk mengimplementasikan CRUD dalam pengerjaan tugas ini.
 
-## Teknologi yang Dipakai
+## Teknologi yang Digunakan
 
 - React JS
 - Vite
@@ -14,3 +14,5 @@ Pada tugas technical challenge ini, Anda diminta untuk membuat sebuah website at
 - Tailwind CSS(with Flowbite as UI Components)
 - Jotai(State Management)
 - OMDB API
+- T3 Env
+- Clerk Auth
