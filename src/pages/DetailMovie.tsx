@@ -1,18 +1,16 @@
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import Image from "../components/ui/Image";
 import { env } from "../env";
-import { DetailMovieProps } from "../types";
-
-const isLoadingAtom = atom<boolean>(true);
-const detailMovieAtom = atom<DetailMovieProps | null>(null);
+import { useTitle } from "../hooks";
+import { detailMovieAtom } from "../store";
 
 const { VITE_MOVIES_API } = env;
 
 export default function DetailMovie() {
   const { imdbID } = useParams();
 
-  const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   const [detailMovie, setDetailMovie] = useAtom(detailMovieAtom);
 
   useEffect(() => {
@@ -24,22 +22,53 @@ export default function DetailMovie() {
     }
 
     getData();
-    setIsLoading(false);
-  }, [setIsLoading, setDetailMovie]);
+  }, [setDetailMovie]);
+
+  useTitle(detailMovie?.Title as string);
 
   return (
-    <div className="w-full border-2 min-h-screen flex">
+    <div className="w-full min-h-screen flex">
+      {/** TODO: styling */}
       <div>
-        <img src={detailMovie?.Poster} alt={detailMovie?.Title} />
-        <div>
-          <p>{detailMovie?.Title}</p>
-          <p>{detailMovie?.Country}</p>
-          <p>{detailMovie?.Genre}</p>
-          <p>{detailMovie?.imdbRating}</p>
-          <p>{detailMovie?.totalSeasons}</p>
-          <p>{detailMovie?.Actors}</p>
-          <p>{detailMovie?.Released}</p>
-          <p>{detailMovie?.Plot}</p>
+        <Image
+          src={detailMovie?.Poster as string}
+          className="w-96 h-96 rounded-md"
+          alt={detailMovie?.Title as string}
+        />
+        <div className="mt-2">
+          <p className="font-bold tracking-wide text-3xl">
+            {detailMovie?.Title}
+          </p>
+          <div className="space-y-1 mt-3">
+            <p>
+              <span className="font-semibold">Country: </span>
+              {detailMovie?.Country}
+            </p>
+            <p>
+              <span className="font-semibold">Genre: </span>
+              {detailMovie?.Genre}
+            </p>
+            <p>
+              <span className="font-semibold">Rating: </span>
+              {detailMovie?.imdbRating}
+            </p>
+            <p>
+              <span className="font-semibold">Total Seasons: </span>
+              {detailMovie?.totalSeasons}
+            </p>
+            <p>
+              <span className="font-semibold">Actors: </span>
+              {detailMovie?.Actors}
+            </p>
+            <p>
+              <span className="font-semibold">Released Date: </span>
+              {detailMovie?.Released}
+            </p>
+            <p className="md:w-1/2">
+              {detailMovie?.Plot}
+              <span className="font-semibold">Plot: </span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Image from "../components/ui/Image";
 import { env } from "../env";
 import { saveMovie } from "../lib/helpers";
 import { isRefetchAtom, moviesAtom, pageAtom, savedMoviesAtom } from "../store";
@@ -23,7 +24,7 @@ export default function Home() {
 
   const searchRef = useRef<HTMLInputElement>(null);
 
-  function handleSave(id: string) {
+  function handleSave(id: string, title: string) {
     const savedMoviesData = [...(savedMovies || [])];
     const moviesData = [...(movies?.Search || [])];
     const foundData = moviesData.find((item) => item.imdbID === id);
@@ -39,7 +40,7 @@ export default function Home() {
 
     setSavedMovies(savedMoviesData);
     saveMovie(savedMoviesData);
-    toast("Berhasil Tersimpan!", { autoClose: 2500 });
+    toast(`Film ${title} berhasil dihapus!`, { autoClose: 2500 });
   }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -81,7 +82,7 @@ export default function Home() {
   return (
     <main className="w-full max-w-7xl min-h-screen flex justify-center">
       <section className="w-full flex flex-col items-center">
-        <div className="flex w-full justify-center items-center flex-col">
+        <div className="flex w-full justify-center items-center flex-col text-center">
           <h1 className="font-bold text-3xl">Cara Baru Cari Film</h1>
           <p className="mt-1">Ayo cari film kamu sekarang!</p>
           <form
@@ -90,7 +91,7 @@ export default function Home() {
           >
             <TextInput
               icon={IconSearch}
-              placeholder="Search here...."
+              placeholder="Cari disini...."
               type="search"
               ref={searchRef}
               className="w-96"
@@ -107,12 +108,10 @@ export default function Home() {
                 <div className="grid lg:grid-cols-3 grid-cols-1 sm:grid-cols-2 grid-rows-1 gap-6">
                   {movies.Search.map((item) => (
                     <Card key={item.imdbID}>
-                      <img
+                      <Image
                         className="w-full h-96"
                         src={item.Poster}
                         alt={item.Title}
-                        loading="lazy"
-                        decoding="async"
                       />
                       <div>
                         <p className="font-bold tracking-wide text-xl">
@@ -124,7 +123,7 @@ export default function Home() {
                       <Button
                         className="font-bold"
                         color="purple"
-                        onClick={() => handleSave(item.imdbID)}
+                        onClick={() => handleSave(item.imdbID, item.Title)}
                       >
                         Save Movie
                       </Button>
@@ -140,7 +139,16 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center font-bold">Tidak ada data!</p>
+                <div>
+                  <Image
+                    src="/img/no-data.svg"
+                    alt="no data"
+                    className="w-80 h-80"
+                  />
+                  <p className="text-center mt-5 text-lg font-bold">
+                    Film tidak ditemukan!
+                  </p>
+                </div>
               )}
               <div className="flex mt-7 space-x-3">
                 {new Array(6)
@@ -157,9 +165,16 @@ export default function Home() {
               </div>
             </>
           ) : (
-            <>
-              <p className="text-center font-bold">Tidak ada data!</p>
-            </>
+            <div>
+              <Image
+                src="/img/no-data.svg"
+                alt="no data"
+                className="sm:w-80 w-60 h-60 sm:h-80"
+              />
+              <p className="text-center mt-5 text-lg font-bold">
+                Belum ada Film yang kamu cari!
+              </p>
+            </div>
           )}
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { BaseMoviesProps, MoviesProps } from "../types";
+import { BaseMoviesProps, DetailMovieProps, MoviesProps } from "../types";
 
 export const savedMoviesAtom = atom<
   (BaseMoviesProps & { id: string })[] | null
@@ -7,3 +7,4 @@ export const savedMoviesAtom = atom<
 export const moviesAtom = atom<MoviesProps | null>(null);
 export const isRefetchAtom = atom<boolean>(false);
 export const pageAtom = atom<number>(1);
+export const detailMovieAtom = atom<DetailMovieProps | null>(null);
