@@ -1,20 +1,20 @@
+import clsx from "clsx";
+import { useAtomValue } from "jotai";
+import { isOpenModalAtom } from "../../../store";
 import { ChildrenProps } from "../../../types";
+import ModalUser from "../ModalUser";
+import Footer from "./Footer";
 import Navbar from "./Navbar";
 
 export default function Layout({ children }: ChildrenProps) {
+  const isOpenModal = useAtomValue(isOpenModalAtom);
+
   return (
-    <>
+    <div className={clsx("bg-white text-black", "dark:bg-gray-900 dark:text-gray-200")}>
+      {isOpenModal ? <ModalUser /> : null}
       <Navbar />
-      <div className="w-full flex items-center min-h-screen flex-col p-4">
-        {children}
-      </div>
-      <footer className="flex mt-10 justify-center items-center p-4">
-        <div>
-          <p className="font-bold text-base tracking-wide">
-            2020-2023 Moviesin
-          </p>
-        </div>
-      </footer>
-    </>
+      <div className="flex min-h-screen w-full flex-col items-center p-4">{children}</div>
+      <Footer />
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import Image from "../components/ui/Image";
 import { env } from "../env";
 import { useTitle } from "../hooks";
@@ -15,10 +16,15 @@ export default function DetailMovie() {
 
   useEffect(() => {
     async function getData() {
-      const response = await fetch(`${VITE_MOVIES_API}&i=${imdbID}`);
-      const data = await response.json();
+      try {
+        const response = await fetch(`${VITE_MOVIES_API}&i=${imdbID}`);
+        const data = await response.json();
 
-      setDetailMovie(data);
+        setDetailMovie(data);
+      } catch (err: any) {
+        toast(err.message, { autoClose: 2500 });
+        console.error(err);
+      }
     }
 
     getData();
@@ -27,19 +33,16 @@ export default function DetailMovie() {
   useTitle(detailMovie?.Title as string);
 
   return (
-    <div className="w-full min-h-screen flex">
-      {/** TODO: styling */}
+    <div className="flex min-h-screen w-full">
       <div>
         <Image
           src={detailMovie?.Poster as string}
-          className="w-96 h-96 rounded-md"
+          className="h-96 w-96 rounded-md"
           alt={detailMovie?.Title as string}
         />
         <div className="mt-2">
-          <p className="font-bold tracking-wide text-3xl">
-            {detailMovie?.Title}
-          </p>
-          <div className="space-y-1 mt-3">
+          <p className="text-3xl font-bold tracking-wide">{detailMovie?.Title}</p>
+          <div className="mt-3 space-y-1">
             <p>
               <span className="font-semibold">Country: </span>
               {detailMovie?.Country}
@@ -65,8 +68,8 @@ export default function DetailMovie() {
               {detailMovie?.Released}
             </p>
             <p className="md:w-1/2">
-              {detailMovie?.Plot}
               <span className="font-semibold">Plot: </span>
+              {detailMovie?.Plot}
             </p>
           </div>
         </div>

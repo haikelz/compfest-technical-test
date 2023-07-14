@@ -1,7 +1,12 @@
-import { useClerk } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { IconMoon, IconSun } from "@tabler/icons-react";
 import clsx from "clsx";
-import { Button, Navbar as FlowbiteNavbar } from "flowbite-react";
+import { Navbar as FlowbiteNavbar } from "flowbite-react";
+import { useAtom } from "jotai";
 import { Link, useLocation } from "react-router-dom";
+import { useScroll, useTheme } from "../../../hooks";
+import { isOpenModalAtom } from "../../../store";
+import Image from "../Image";
 
 const linkList = [
   {
@@ -18,20 +23,35 @@ const linkList = [
 
 export default function Navbar() {
   const { pathname } = useLocation();
-  const { signOut } = useClerk();
+  const { user } = useUser();
+
+  const [isOpenModal, setIsOpenModal] = useAtom(isOpenModalAtom);
+  const [theme, setTheme] = useTheme();
+
+  const scroll = useScroll();
 
   return (
-    <FlowbiteNavbar className="border-b-[1.5px] z-10 w-full backdrop-blur-md bg-white/80 sticky top-0">
+    <FlowbiteNavbar
+      className={clsx(
+        "sticky top-0 z-10 w-full bg-white/80 backdrop-blur-md",
+        "dark:bg-gray-900/80",
+        scroll > 100 ? "border-b-[1.5px]" : ""
+      )}
+    >
       <Link to="/">
-        <h1 className="font-bold text-2xl">Moviesin</h1>
+        <div className="flex items-center justify-center space-x-2">
+          <Image src="/img/logo.png" alt="logo" className="h-9 w-9" />
+          <h1 className="text-2xl font-bold tracking-wide">Moviesin</h1>
+        </div>
       </Link>
-      <ul className="hidden md:flex justify-center items-center space-x-8">
+      <ul className="hidden items-center justify-center space-x-8 md:flex">
         {linkList.map((item) => (
           <li key={item.id}>
             <Link
               className={clsx(
+                "dark:text-gray-200",
                 pathname === item.route
-                  ? "underline underline-offset-4 font-bold"
+                  ? "font-bold text-black underline underline-offset-4"
                   : "font-medium"
               )}
               to={item.route}
@@ -41,9 +61,22 @@ export default function Navbar() {
           </li>
         ))}
         <li>
-          <Button className="font-bold" onClick={() => signOut()}>
-            Logout
-          </Button>
+          <button
+            type="button"
+            aria-label="open modal"
+            onClick={() => setIsOpenModal(!isOpenModal)}
+            className="h-10 w-10 rounded-full border-2 border-cyan-600"
+          >
+            <Image src={user?.profileImageUrl as string} alt="" className="rounded-full" />
+          </button>
+        </li>
+        <li>
+          <button
+            className="rounded-full dark:bg-gray-800"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? <IconSun /> : <IconMoon />}
+          </button>
         </li>
       </ul>
     </FlowbiteNavbar>

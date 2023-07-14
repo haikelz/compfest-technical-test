@@ -1,6 +1,6 @@
 import { IconSearch } from "@tabler/icons-react";
 import { Button, Card, TextInput } from "flowbite-react";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { nanoid } from "nanoid";
 import { FormEvent, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -10,11 +10,10 @@ import Image from "../components/ui/Image";
 import { env } from "../env";
 import { saveMovie } from "../lib/helpers";
 import { isRefetchAtom, moviesAtom, pageAtom, savedMoviesAtom } from "../store";
-
-const isLoadingAtom = atom<boolean>(true);
+import clsx from "clsx";
+import secureLocalStorage from "react-secure-storage";
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   const [movies, setMovies] = useAtom(moviesAtom);
   const [savedMovies, setSavedMovies] = useAtom(savedMoviesAtom);
   const [isRefetch, setIsRefetch] = useAtom(isRefetchAtom);
@@ -40,7 +39,7 @@ export default function Home() {
 
     setSavedMovies(savedMoviesData);
     saveMovie(savedMoviesData);
-    toast(`Film ${title} berhasil dihapus!`, { autoClose: 2500 });
+    toast(`Film ${title} berhasil ditambahkan!`, { autoClose: 2500 });
   }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -63,7 +62,8 @@ export default function Home() {
           const data = await response.json();
 
           setMovies(data);
-        } catch (err) {
+        } catch (err: any) {
+          toast(err.message, { autoClose: 2500 });
           console.error(err);
         }
       }
@@ -71,24 +71,20 @@ export default function Home() {
       getData();
     }
 
-    setIsLoading(false);
     setIsRefetch(false);
 
-    if (localStorage.getItem("saved-movies")) {
-      setSavedMovies(JSON.parse(localStorage.getItem("saved-movies") || ""));
+    if (secureLocalStorage.getItem("saved-movies")) {
+      setSavedMovies(JSON.parse(secureLocalStorage.getItem("saved-movies") as string));
     }
-  }, [setIsLoading, setMovies, isRefetch, setSavedMovies]);
+  }, [setMovies, isRefetch, setSavedMovies, searchRef]);
 
   return (
-    <main className="w-full max-w-7xl min-h-screen flex justify-center">
-      <section className="w-full flex flex-col items-center">
-        <div className="flex w-full justify-center items-center flex-col text-center">
-          <h1 className="font-bold text-3xl">Cara Baru Cari Film</h1>
+    <main className="flex min-h-screen w-full max-w-7xl justify-center">
+      <section className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center justify-center text-center">
+          <h1 className="text-3xl font-bold">Cara Baru Cari Film</h1>
           <p className="mt-1">Ayo cari film kamu sekarang!</p>
-          <form
-            onSubmit={handleSubmit}
-            className="w-full flex justify-center items-center mt-4"
-          >
+          <form onSubmit={handleSubmit} className="mt-4 flex w-full items-center justify-center">
             <TextInput
               icon={IconSearch}
               placeholder="Cari disini...."
@@ -99,26 +95,24 @@ export default function Home() {
             />
           </form>
         </div>
-        <div className="mt-5 w-full flex flex-col justify-center items-center">
-          {isLoading ? (
-            <p>Loading....</p>
-          ) : movies !== null ? (
+        <div className="mt-5 flex w-full flex-col items-center justify-center">
+          {movies !== null ? (
             <>
               {movies.Response !== "False" ? (
-                <div className="grid lg:grid-cols-3 grid-cols-1 sm:grid-cols-2 grid-rows-1 gap-6">
+                <div
+                  className={clsx(
+                    "grid w-full grid-cols-1 grid-rows-1 gap-6",
+                    "sm:grid-cols-2",
+                    "lg:grid-cols-3"
+                  )}
+                >
                   {movies.Search.map((item) => (
                     <Card key={item.imdbID}>
-                      <Image
-                        className="w-full h-96"
-                        src={item.Poster}
-                        alt={item.Title}
-                      />
+                      <Image className="h-96 w-full" src={item.Poster} alt={item.Title} />
                       <div>
-                        <p className="font-bold tracking-wide text-xl">
-                          {item.Title}
-                        </p>
-                        <p className="capitalize font-medium">{item.Type}</p>
-                        <p className="text-sm mt-2">{item.Year}</p>
+                        <p className="text-xl font-bold tracking-wide">{item.Title}</p>
+                        <p className="font-medium capitalize">{item.Type}</p>
+                        <p className="mt-2 text-sm">{item.Year}</p>
                       </div>
                       <Button
                         className="font-bold"
@@ -127,11 +121,8 @@ export default function Home() {
                       >
                         Save Movie
                       </Button>
-                      <Link
-                        to={`/detail-movie/${item.imdbID}`}
-                        className="w-full"
-                      >
-                        <Button className="font-bold w-full" color="gray">
+                      <Link to={`/detail-movie/${item.imdbID}`} className="w-full">
+                        <Button className="w-full font-bold" color="gray">
                           More Detail
                         </Button>
                       </Link>
@@ -140,25 +131,16 @@ export default function Home() {
                 </div>
               ) : (
                 <div>
-                  <Image
-                    src="/img/no-data.svg"
-                    alt="no data"
-                    className="w-80 h-80"
-                  />
-                  <p className="text-center mt-5 text-lg font-bold">
-                    Film tidak ditemukan!
-                  </p>
+                  <Image src="/img/no-data.svg" alt="no data" className="h-80 w-80" />
+                  <p className="mt-5 text-center text-lg font-bold">Film tidak ditemukan!</p>
                 </div>
               )}
-              <div className="flex mt-7 space-x-3">
+              <div className="mt-7 flex space-x-3">
                 {new Array(6)
                   .fill(null)
                   .map((_, index) => index + 1)
                   .map((item) => (
-                    <Button
-                      key={`Button page ${item}`}
-                      onClick={() => handlePage(item)}
-                    >
+                    <Button key={`Button page ${item}`} onClick={() => handlePage(item)}>
                       {item}
                     </Button>
                   ))}
@@ -169,11 +151,9 @@ export default function Home() {
               <Image
                 src="/img/no-data.svg"
                 alt="no data"
-                className="sm:w-80 w-60 h-60 sm:h-80"
+                className={clsx("h-60 w-60", "sm:h-80 sm:w-80")}
               />
-              <p className="text-center mt-5 text-lg font-bold">
-                Belum ada Film yang kamu cari!
-              </p>
+              <p className="mt-5 text-center text-lg font-bold">Belum ada Film yang kamu cari!</p>
             </div>
           )}
         </div>

@@ -1,7 +1,9 @@
+import secureLocalStorage from "react-secure-storage";
+
 /**
- * A function that save new data to localStorage
+ * A function that save new data to localStorage(encrypted with react-secure-storage)
  * @param newData
  */
 export function saveMovie<T>(newData: T) {
-  localStorage.setItem("saved-movies", JSON.stringify(newData));
+  secureLocalStorage.setItem("saved-movies", JSON.stringify(newData));
 }

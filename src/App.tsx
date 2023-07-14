@@ -1,9 +1,4 @@
-import {
-  ClerkProvider,
-  RedirectToSignIn,
-  SignedIn,
-  SignedOut,
-} from "@clerk/clerk-react";
+import { ClerkProvider, RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/ui/Layout";
